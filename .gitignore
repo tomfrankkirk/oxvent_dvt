@@ -1,1 +1,22 @@
 .DS_Store
+# Arduino
+# -------------------------------------------------------------------
+*.bin
+*.elf
+build.sh
+deploy.sh
+
+# C language
+# -------------------------------------------------------------------
+# Compile commands for cquery
+compile_commands.json
+
+# Out folder
+out/
+
+# Prerequisites
+*.d
+
+#logs
+*.log
+*.dat
