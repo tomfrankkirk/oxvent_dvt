@@ -3,7 +3,7 @@ import serial.tools.list_ports
 import re
 import csv
 
-fourcaps =  re.compile('[A-Z][A-Z][A-Z][A-Z]')
+fourcaps =  re.compile('[A-Z][A-Z][A-Z][A-Z]') #regex to detect 4 letter capital strings
 
 log_dict = {
     'MASTER': 0,
@@ -21,7 +21,7 @@ log_dict = {
 
 set_dict = {
     'IS_VENTILATING': 0,
-    'TIDAY_VOLUME': 1
+    'TIDAL_VOLUME': 1
 }
 
 
@@ -34,8 +34,7 @@ class OxVentLogger :
             for p in serial.tools.list_ports.comports()   
         ]
         self.ser = serial.Serial(ports[port], 115200, timeout = 0)
-        self.filename = filename
-        self.analyser = OxVentAnalyser(filename)
+
 
 
         self.ser.timeout = 10
@@ -48,7 +47,10 @@ class OxVentLogger :
         self.ser.read()
         self.ser.timeout = 0 #resets to short timeouts
         print("New Oxvent Device instanced.")
-
+        
+        
+        self.filename = filename
+        self.analyser = OxVentAnalyser(filename)
 
         datafile=open(self.filename, 'a')
         now = datetime.datetime.now()
@@ -59,12 +61,15 @@ class OxVentLogger :
 
         self.seq = ""
         self.line_count = 1 
+        self.extern_line_count = 1
 
     def __del__(self):
         self.ser.close()
 
     def write(self, s):
         self.ser.write(bytes(s,'utf-8'))
+
+
 
     def mainloop(self):
         
@@ -88,6 +93,18 @@ class OxVentLogger :
 
             self.line_count += 1
             self.seq = ""
+
+    def log_external_flow(self, msg):
+
+        now = datetime.datetime.now()
+        timestring = now.strftime("%Y-%m-%d-%H-%M-%S")
+        linestring = timestring + ",EXTE," + str(self.extern_line_count) + "," + str(msg) + "\r"
+        datafile=open(self.filename, 'a')
+        datafile.write(linestring)
+        datafile.close()
+        print(linestring) 
+
+        self.extern_line_count +=1
 
     def enable_logging(self, p): 
         """Enables a parameter for logging on the oxvent. Takes a string argument"""
@@ -116,6 +133,8 @@ class OxVentAnalyser :
     def __init__(self, f):
         self.filename = f
         print("Analyzer attached to " + f)
+
+        self.last_external_val = 0
 
 
         self.masterdict = {}  #makes a master dict of lists
@@ -151,25 +170,33 @@ class OxVentAnalyser :
                     if self.istag(item) & self.isfloat(s[num+1]):
                         data[item] = float(s[num+1])
         
-        clock_found = ('CLOK' in data)
+            clock_found = ('CLOK' in data)
 
-        if not clock_found:
-            #print("No timestamp - discarding")
+            if not clock_found:
+                #print("No timestamp - discarding")
+                return {}
+
+            if clock_found:
+                return data
+
+        if s[1] == "EXTE": #if data is from an external device
+            self.last_external_val = s[3] #stores the last external flow in a buffer
             return {}
 
-        if clock_found:
-            return data
 
     def clear_masterdict(self):
         self.masterdict = {}
 
     def append_masterdict(self, dict_in):
 
+        if dict_in != {}:
+            print(dict_in)
+            
         clock = dict_in.get('CLOK')
 
         for key in dict_in:
             if key != 'CLOK':
-                newpair = [clock, dict_in.get(key)]
+                newpair = [clock, dict_in.get(key), self.last_external_val]
                 if key in self.masterdict: #if we have already had this data point in the dict
                     mainlist = self.masterdict.get(key)
                     mainlist.append(newpair)
@@ -180,9 +207,11 @@ class OxVentAnalyser :
 
 
     def export_masterdict(self):
+        print(self.masterdict)
         for key in self.masterdict:
             sublist = self.masterdict.get(key)
             with open(self.filename[0:len(self.filename)-4] + "_" + key + ".dat", 'w', newline='') as file:
+                print(self.filename[0:len(self.filename)-4] + "_" + key + ".dat")
                 writer = csv.writer(file)
                 for i in sublist:
                     writer.writerow(i)

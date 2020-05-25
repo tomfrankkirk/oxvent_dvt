@@ -6,6 +6,7 @@ from oxvent import OxVentLogger
 
 from kbthread import KeyboardThread
 
+millis = lambda: int(round(time.time() * 1000))
 
 print("Welcome to OxVent logger.")
 
@@ -49,7 +50,7 @@ main_flag = 1
 def my_callback(inp):
     global main_flag
     #evaluate the keyboard input
-    if inp == 'S': #stops log
+    if inp == 'Stop': #stops log
         main_flag = 0
         print("Stopping.")
     elif inp[0] == 'C': #commands the oxvent directly
@@ -71,7 +72,9 @@ while main_flag == 1:
     #if you want the flow meter to do stuff, then put it here with a time based if statement, something like:
     # if (time = something):
     #   flow_ser.write("take a reading")
-    #   data = flow_ser.read()
+    #   
+    #oxvent.log_external_val(millis()/1000) #your set flow rate goes here
     oxvent.mainloop()
+    
 
 oxvent.analyser.process_all()
