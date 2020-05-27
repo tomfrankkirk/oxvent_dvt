@@ -37,15 +37,16 @@ class OxVentLogger :
 
 
 
-        self.ser.timeout = 10
-        self.write("0\r") #sends the OxVent an ACK and waits 1 second
+        #self.ser.timeout = 10
+        #self.write("0\r") #sends the OxVent an ACK and waits 1 second
 
-        b1 = self.ser.read()
-        b1 = b1.decode("utf-8")
-        if b1 != '0':
-            raise IOError("This is not an OxVent!")
-        self.ser.read()
-        self.ser.timeout = 0 #resets to short timeouts
+        #b1 = self.ser.read()
+        #b1 = b1.decode("utf-8")
+        #if b1 != '0':
+        #    print(b1)
+        #    raise IOError("This is not an OxVent!")
+        #self.ser.read()
+        #self.ser.timeout = 0 #resets to short timeouts
         print("New Oxvent Device instanced.")
         
         
@@ -75,7 +76,8 @@ class OxVentLogger :
         
         data = self.ser.read()
         data = data.decode("utf-8")
-        self.seq += data
+        if data != '\n':
+            self.seq += data
 
         
         
@@ -121,6 +123,10 @@ class OxVentLogger :
             self.write(message)
         except KeyError:
             print("Key Not Allowed")
+
+
+    def block_dp(self): #blocks forever and logs dp
+        self.write('d')
 
 
 
