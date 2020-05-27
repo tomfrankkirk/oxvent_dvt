@@ -63,7 +63,7 @@ kthread = KeyboardThread(my_callback) #sets us a separate thread to handle keybo
 
 oxvent.enable_logging('FLOW_RAW')  #enables raw flow logging on the oxvent
 
-oxvent.block_dp()
+oxvent.block_dp() #sets the device into blocked mode
 
 while main_flag == 1:
 
