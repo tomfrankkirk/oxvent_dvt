@@ -17,9 +17,9 @@ sample_length_millis = 5000
 
 init_flow = 100
 
-final_flow = 300
+final_flow = 650
 
-diff_flow = 25
+diff_flow = 50
 
 
 

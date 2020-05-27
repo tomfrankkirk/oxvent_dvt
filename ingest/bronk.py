@@ -38,7 +38,7 @@ class Bronk:
 
         # Generate the command string for the Bronkhorst
         bronkCommand = ":0603010121" + bronkSetPointHex + "\r\n"
-        print(bronkCommand)
+        #print(bronkCommand)
         self.write(bronkCommand)
     
         # The Bronkhorst should send an acknowledgement - check that it was successful
@@ -69,7 +69,7 @@ class Bronk:
         return flowRate
     
     def establishStability(self):
-        
+        time.sleep(1)
         self.correctFlowCounts = 0
         
         # Compare a reading to the set flow rate. if it's in range, increment the counter
