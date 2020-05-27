@@ -126,6 +126,10 @@ class OxVentLogger :
             print("Key Not Allowed")
 
 
+    def block_dp(self): #blocks forever and logs dp
+        self.write('d')
+
+
 
 
 
