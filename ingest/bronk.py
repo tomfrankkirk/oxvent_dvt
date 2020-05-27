@@ -1,19 +1,27 @@
 class Bronk:
     
-    currentFlowRate = 0 # Keep track of what the curent flow rate should be
-    maxFlowRate = 40000 # ml/min
-    bronkUnitsMaxDec = 32000 # Max set-point of the Bronkhorst (corresponds to 4l/min)
-    bronkRequestMeasure = ":06030401210120\r\n"
+
     
     def __init__(self, portName):
-        flow_ser = serial.Serial(portName, 38400)
+        self.port = port
+        ports = [
+            p.device
+            for p in serial.tools.list_ports.comports()   
+        ]
+        self.ser = serial.Serial(ports[port], 115200, timeout = 0)
         
-    def setFlowRate(flowRate):
+        
+        self.currentFlowRate = 0 # Keep track of what the curent flow rate should be
+        self.maxFlowRate = 40000 # ml/min
+        self.bronkUnitsMaxDec = 32000 # Max set-point of the Bronkhorst (corresponds to 4l/min)
+        self.bronkRequestMeasure = ":06030401210120\r\n"
+        
+    def setFlowRate(self,flowRate):
     
         # Add a catch of the set point being out of range
         
         # Update the instance variable
-        currentFlowRate = flowRate
+        self.currentFlowRate = flowRate
         
         # Convert ml/s to ml/min
         millilitreMinute = (flowRate * 60)
@@ -24,18 +32,21 @@ class Bronk:
         # Generate the command string for the Bronkhorst
         bronkCommand = ":0603010121" + bronkSetPointHex + "\r\n"
     
-        flow_ser.write(bronkCommand)
+        self.write(bronkCommand)
     
         # The Bronkhorst should send an acknowledgement - check that it was successful
-        if flow_ser.read(100) != ":0403000005\r\n":
+        if self.ser.read(100) != ":0403000005\r\n":
             print "Error sending command to Bronkhorst"
             return{}
+
+    def write(self, s):
+        self.ser.write(bytes(s,'utf-8'))
         
-    def getFlowRate():
+    def getFlowRate(self):
         
         # Request a measurement of the flow rate from the Bronkhorst
-        flow_ser.write(bronkRequestMeasure)
-        measuredHex = flow_ser.read(100)[11:15]
+        self.ser.write(bronkRequestMeasure)
+        measuredHex = self.ser.read(100)[11:15]
         
         # Convert Bronkhorst units from hex to decimal, and convert to ml/s
         bronkUnitsDec = int(measuredHex, 16)
@@ -43,20 +54,25 @@ class Bronk:
         
         return flowRate
     
-    def establishStability():
+    def establishStability(self):
         
-        correctFlowCounts = 0
+        self.correctFlowCounts = 0
         
         # Compare a reading to the set flow rate. if it's in range, increment the counter
         for x in range(0, 5):
-            if abs(self.getFlowRate() - flowRate) < 5:
-                correctFlowCounts++
+            if abs(self.getFlowRate() - self.currentFlowRate) < 5:
+                self.correctFlowCounts +=1
         
         # Check that we had 5 successive correct readings
-        if correctFlowCounts == 5:
-            return True
+        if (self.correctFlowCounts == 5):
+            self.stable = 1
         else:
-            return False
+            self.stable = 0
+        
+    def mainloop(self):
+        if True:
+            
+        
         
         
         

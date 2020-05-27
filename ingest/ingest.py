@@ -6,6 +6,8 @@ from oxvent import OxVentLogger
 
 from kbthread import KeyboardThread
 
+from bronk import Bronk
+
 millis = lambda: int(round(time.time() * 1000))
 
 print("Welcome to OxVent logger.")
@@ -38,7 +40,7 @@ if oxvent_port_index == flow_port_index:
 
 
 
-flow_ser = serial.Serial(ports[flow_port_index]) #serial device for the TSI Flow Meter
+flow_meter = Bronk(flow_port_index)
 
 
 
