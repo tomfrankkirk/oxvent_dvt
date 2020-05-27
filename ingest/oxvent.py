@@ -33,7 +33,7 @@ class OxVentLogger :
             p.device
             for p in serial.tools.list_ports.comports()   
         ]
-        self.ser = serial.Serial(ports[port], 115200, timeout = 0)
+        self.ser = serial.Serial(ports[port], 9600, timeout = 0, writeTimeout = 0)
 
         self.enabled = 0
 
@@ -78,31 +78,35 @@ class OxVentLogger :
         self.enabled = 0
 
     def flush(self):
-        self.ser.flush()
+        #print("oxvent flushing")
+        self.ser.reset_input_buffer()
+        #print("oxvent flushed")
 
     def mainloop(self):
-        
-        data = self.ser.read()
-        data = data.decode("utf-8")
-        if data != '\n':
-            self.seq += data
+        if self.ser.in_waiting:        
+            data = self.ser.read()
+            
+            data = data.decode("utf-8")
+            if data != '\n':
+                self.seq += data
+            
 
-        
-        
+            
+            
 
-        if data == '\r':
-            if self.enabled == 1:
-                now = datetime.datetime.now()
-                timestring = now.strftime("%Y-%m-%d-%H-%M-%S")
-                linestring = timestring + ",OXVE," + str(self.line_count) + "," + self.seq
-                datafile=open(self.filename, 'a')
-                datafile.write(linestring)
-                datafile.close()
-                #print(linestring) 
+            if data == '\r':
+                if self.enabled == 1:
+                    now = datetime.datetime.now()
+                    timestring = now.strftime("%Y-%m-%d-%H-%M-%S")
+                    linestring = timestring + ",OXVE," + str(self.line_count) + "," + self.seq
+                    datafile=open(self.filename, 'a')
+                    datafile.write(linestring)
+                    datafile.close()
+                    print(linestring) 
 
 
-            self.line_count += 1
-            self.seq = ""
+                self.line_count += 1
+                self.seq = ""
 
     def log_external_flow(self, msg):
 
@@ -134,7 +138,9 @@ class OxVentLogger :
 
 
     def block_dp(self): #blocks forever and logs dp
-        self.write('d')
+        #print("blocking")
+        self.write('D')
+        
 
 
 
@@ -182,7 +188,10 @@ class OxVentAnalyser :
             for num, item in enumerate(s): #retrieves tags and puts them in a dict
                 if num < len(s)-1:
                     if self.istag(item) & self.isfloat(s[num+1]):
-                        data[item] = float(s[num+1])
+                        try:
+                            data[item] = float(s[num+1])
+                        except:
+                            return {}
         
             clock_found = ('CLOK' in data)
 
@@ -194,7 +203,7 @@ class OxVentAnalyser :
                 return data
 
         if s[1] == "EXTE": #if data is from an external device
-            self.last_external_val = s[3] #stores the last external flow in a buffer
+            self.last_external_val = int(s[3]) #stores the last external flow in a buffer
             return {}
 
 

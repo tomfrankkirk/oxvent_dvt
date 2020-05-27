@@ -10,6 +10,25 @@ from bronk import Bronk
 
 millis = lambda: int(round(time.time() * 1000))
 
+
+#test params
+
+sample_length_millis = 5000
+
+init_flow = 100
+
+final_flow = 300
+
+diff_flow = 25
+
+
+
+
+
+
+
+
+
 print("Welcome to OxVent logger.")
 
 now = datetime.datetime.now()
@@ -32,8 +51,8 @@ i = 0
 for p in ports:
     print(str(i) + " - " + p)
     i = i+1
-oxvent_port_index = int(input("Please select the OxVent: "))
-flow_port_index = int(input("Please select the Flow Meter: "))
+oxvent_port_index = int(input("Please select the OxVent (typically ACM0): "))
+flow_port_index = int(input("Please select the Flow Meter (typically USB0):: "))
 
 if oxvent_port_index == flow_port_index:
     print("Warning: same port selected for OxVent and Flow Meter!")
@@ -63,22 +82,29 @@ def my_callback(inp):
 
 kthread = KeyboardThread(my_callback) #sets us a separate thread to handle keyboard cmds
 
-oxvent.enable_logging('FLOW_RAW')  #enables raw flow logging on the oxvent
-
+#oxvent.enable_logging('FLOW_RAW')  #enables raw flow logging on the oxvent
+#print("blocking dp")
 oxvent.block_dp() #sets the device into blocked mode
+#print("dp blocked")
+flow_meter.setFlowRate(0)
+f = 200
 
-flow_meter.setFlowRate(20000) #sets flow rate to 20000
-
-while flow_meter.establishStability() != 1:
-    blocked = 1
-
-oxvent.flush()
-
-
-while kb_flag == 1:
-    oxvent.mainloop()
-
-
+for f in range(init_flow, final_flow, diff_flow):
+    flow_meter.setFlowRate(f) #sets flow rate to 20000
+    #print("flow rate set")
+    while flow_meter.establishStability() != 1:
+        blocked = 1
+        print("unstable")
+    print("flow rate stable")
+    oxvent.log_external_flow(f)
+    oxvent.flush()
+    oxvent.enable()
     
+    time_start = millis()
+    while millis() < (time_start+sample_length_millis):
+        oxvent.mainloop()
+
+    flow_meter.setFlowRate(0)
+print("log stopped, processing")  
 
 oxvent.analyser.process_all()
