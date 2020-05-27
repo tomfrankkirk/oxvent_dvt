@@ -47,13 +47,13 @@ flow_meter = Bronk(flow_port_index)
 oxvent = OxVentLogger(oxvent_port_index, filename) #creates an OxVentLogger, opening its serial port
 
 
-main_flag = 1
+kb_flag = 1
 
 def my_callback(inp):
-    global main_flag
+    global kb_flag
     #evaluate the keyboard input
     if inp == 'Stop': #stops log
-        main_flag = 0
+        kb_flag = 0
         print("Stopping.")
     elif inp[0] == 'C': #commands the oxvent directly
         oxvent.write(inp[1:len(inp)] + '\r')
@@ -67,16 +67,18 @@ oxvent.enable_logging('FLOW_RAW')  #enables raw flow logging on the oxvent
 
 oxvent.block_dp() #sets the device into blocked mode
 
-while main_flag == 1:
+flow_meter.setFlowRate(20000) #sets flow rate to 20000
 
-    
-    #this loop basically runs forever until interrupted with Ctrl-C, constantly logging and if appropriate analysing the data. 
-    #if you want the flow meter to do stuff, then put it here with a time based if statement, something like:
-    # if (time = something):
-    #   flow_ser.write("take a reading")
-    #   
-    #oxvent.log_external_val(millis()/1000) #your set flow rate goes here
+while flow_meter.establishStability() != 1:
+    blocked = 1
+
+oxvent.flush()
+
+
+while kb_flag == 1:
     oxvent.mainloop()
+
+
     
 
 oxvent.analyser.process_all()

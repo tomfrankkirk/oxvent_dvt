@@ -35,7 +35,7 @@ class OxVentLogger :
         ]
         self.ser = serial.Serial(ports[port], 115200, timeout = 0)
 
-
+        self.enabled = 0
 
         #self.ser.timeout = 10
         #self.write("0\r") #sends the OxVent an ACK and waits 1 second
@@ -71,7 +71,14 @@ class OxVentLogger :
     def write(self, s):
         self.ser.write(bytes(s,'utf-8'))
 
+    def enable(self):
+        self.enabled = 1
+        
+    def disable(self):
+        self.enabled = 0
 
+    def flush(self):
+        self.ser.flush()
 
     def mainloop(self):
         
@@ -84,14 +91,14 @@ class OxVentLogger :
         
 
         if data == '\r':
-            
-            now = datetime.datetime.now()
-            timestring = now.strftime("%Y-%m-%d-%H-%M-%S")
-            linestring = timestring + ",OXVE," + str(self.line_count) + "," + self.seq
-            datafile=open(self.filename, 'a')
-            datafile.write(linestring)
-            datafile.close()
-            #print(linestring) 
+            if self.enabled == 1:
+                now = datetime.datetime.now()
+                timestring = now.strftime("%Y-%m-%d-%H-%M-%S")
+                linestring = timestring + ",OXVE," + str(self.line_count) + "," + self.seq
+                datafile=open(self.filename, 'a')
+                datafile.write(linestring)
+                datafile.close()
+                #print(linestring) 
 
 
             self.line_count += 1

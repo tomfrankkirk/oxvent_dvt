@@ -10,11 +10,14 @@ class Bronk:
         ]
         self.ser = serial.Serial(ports[port], 115200, timeout = 0)
         
+        self.stable = 0
         
         self.currentFlowRate = 0 # Keep track of what the curent flow rate should be
         self.maxFlowRate = 40000 # ml/min
         self.bronkUnitsMaxDec = 32000 # Max set-point of the Bronkhorst (corresponds to 4l/min)
         self.bronkRequestMeasure = ":06030401210120\r\n"
+
+        self.lastTimeRead = 0
         
     def setFlowRate(self,flowRate):
     
@@ -68,9 +71,14 @@ class Bronk:
             self.stable = 1
         else:
             self.stable = 0
-        
+        return self.stable
+    
+       
     def mainloop(self):
         if True:
+            if self.stable = 0:
+                establishStability(self)
+
             
         
         
