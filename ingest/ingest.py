@@ -35,7 +35,7 @@ now = datetime.datetime.now()
 timestring = now.strftime("%Y-%m-%d-%H-%M-%S")
 print ("Current date and time : " + timestring)
 
-filename = "OxVent_" + timestring + ".log"
+
 
 print("Finding ports...")
 ports = [
@@ -61,7 +61,9 @@ if oxvent_port_index == flow_port_index:
 
 flow_meter = Bronk(flow_port_index)
 
+tag = input("What is the name of this test? Only use underscores? :")
 
+filename = "OxVent_" + timestring + "_" + tag + ".log"
 
 oxvent = OxVentLogger(oxvent_port_index, filename) #creates an OxVentLogger, opening its serial port
 
