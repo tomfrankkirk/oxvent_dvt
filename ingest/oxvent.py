@@ -56,8 +56,9 @@ class OxVentLogger :
         datafile=open(self.filename, 'a')
         now = datetime.datetime.now()
         timestring = now.strftime("%Y-%m-%d-%H-%M-%S")
-        summary = "OxVent Log taken on port " + str(ports[port]) + " at " + timestring +'\r'
-        datafile.write(summary)
+        self.summary = "OxVent Log taken on port " + str(ports[port]) + " at " + timestring +'\r'
+        datafile.write(self.summary)
+        datafile.write("Start of Log:\r")
         datafile.close()
 
         self.seq = ""
@@ -90,7 +91,7 @@ class OxVentLogger :
             datafile=open(self.filename, 'a')
             datafile.write(linestring)
             datafile.close()
-            print(linestring) 
+            #print(linestring) 
 
 
             self.line_count += 1
@@ -191,8 +192,8 @@ class OxVentAnalyser :
 
     def append_masterdict(self, dict_in):
 
-        if dict_in != {}:
-            print(dict_in)
+        #if dict_in != {}:
+            #print(dict_in)
             
         clock = dict_in.get('CLOK')
 
@@ -209,7 +210,7 @@ class OxVentAnalyser :
 
 
     def export_masterdict(self):
-        print(self.masterdict)
+        #print(self.masterdict)
         for key in self.masterdict:
             sublist = self.masterdict.get(key)
             with open(self.filename[0:len(self.filename)-4] + "_" + key + ".dat", 'w', newline='') as file:
