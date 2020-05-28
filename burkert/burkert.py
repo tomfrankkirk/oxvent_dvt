@@ -13,9 +13,9 @@ millis = lambda: int(round(time.time() * 1000))
 
 
 
-current_delta = 10 # 10mA increments
-current_init = 10
-current_max = 1000
+current_delta = 2 
+current_init = 110
+current_max = 180 #180 for SMC valve, ??? for Burkert valve
 
 print("Welcome to Burkert Valve tester.")
 
@@ -47,14 +47,14 @@ flow_meter.ok()
 flow_meter.sample_time(10)
 flow_meter.readline()
 
-power_supply = psu.RSPD_3303C()
+power_supply = psu.E36103A()
 
-power_supply.set_voltage(24)
+power_supply.set_voltage(20)
 
 
 tag = input("What is the name of this test? Only use underscores? ")
 
-filename = "Burkert_" + timestring + "_" + tag + ".csv"
+filename = timestring + "_VALVE_" + tag + ".csv"
 
 
 with open(filename, 'a') as file:
@@ -64,6 +64,8 @@ with open(filename, 'a') as file:
     for i in range(current_init,current_max,current_delta):
         
         power_supply.set_current(i)
+        print("Set current to " + str(i) +"mA")
+        time.sleep(0.1)
         power_supply.turn_on()
         time.sleep(2)
         f_all = flow_meter.collect_data(100)
