@@ -140,6 +140,10 @@ class OxVentLogger :
     def block_dp(self): #blocks forever and logs dp
         #print("blocking")
         self.write('D')
+
+    def block_gp(self): #blocks forever and logs dp
+        #print("blocking")
+        self.write('G')
         
 
 
