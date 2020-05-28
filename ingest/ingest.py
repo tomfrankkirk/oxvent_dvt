@@ -13,7 +13,7 @@ millis = lambda: int(round(time.time() * 1000))
 
 #test params
 
-sample_length_millis = 5000
+sample_length_millis = 2000
 
 init_flow = 100
 
@@ -21,7 +21,8 @@ final_flow = 650
 
 diff_flow = 50
 
-
+zeroing_enabled = 1 #toggles whether we take a zero reading
+sweep_enabled = 1 #toggles whether we sweep the range defined above
 
 
 
@@ -91,9 +92,16 @@ oxvent.block_dp() #sets the device into blocked mode
 flow_meter.setFlowRate(0)
 f = 200
 
-for f in range(init_flow, final_flow, diff_flow):
+flows = []
+
+if sweep_enabled:
+    flows = (list(range(init_flow, final_flow, diff_flow)))
+if zeroing_enabled:
+    flows.append(0)
+
+for f in flows:
     flow_meter.setFlowRate(f) #sets flow rate to 20000
-    #print("flow rate set")
+    print(f)
     while flow_meter.establishStability() != 1:
         blocked = 1
         print("unstable")
